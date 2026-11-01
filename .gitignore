@@ -1,0 +1,37 @@
+# IDE and local SDK configuration
+.idea/
+*.iml
+local.properties
+
+# Kotlin, Amper, Gradle, and build output
+.kotlin/
+.amper/
+.gradle/
+build/
+out/
+captures/
+*.hprof
+
+# Local environment and signing credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+keystore.properties
+*.jks
+*.keystore
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Xcode generated and user-specific files; keep the shared project and schemes
+DerivedData/
+*.xcuserstate
+**/module.xcodeproj/*
+!**/module.xcodeproj/project.pbxproj
+!**/module.xcodeproj/xcshareddata/
+!**/module.xcodeproj/project.xcworkspace/
+**/xcshareddata/WorkspaceSettings.xcsettings
+xcuserdata/
