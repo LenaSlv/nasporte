@@ -37,13 +37,13 @@ import com.example.testmmp.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-private val Ink = Color(0xFF060607)
-private val Muted = Color(0xFF707075)
-private val Forest = Color(0xFF0E2E16)
-private val Lime = Color(0xFFB6F500)
-private val Page = Color(0xFFEDEDEE)
-private val Card = Color(0xFFF7F7F8)
-private val Tile = Color(0xFFE9E9EA)
+internal val Ink = Color(0xFF060607)
+internal val Muted = Color(0xFF707075)
+internal val Forest = Color(0xFF0E2E16)
+internal val Lime = Color(0xFFB6F500)
+internal val Page = Color(0xFFEDEDEE)
+internal val Card = Color(0xFFF7F7F8)
+internal val Tile = Color(0xFFE9E9EA)
 
 private data class Appointment(val time: String, val name: String, val format: String, val day: Int = 22)
 
@@ -62,7 +62,7 @@ private val HomeTasks = listOf(
 )
 
 @Composable
-fun TrainerHomeScreen() {
+fun TrainerHomeScreen(onClients: () -> Unit = {}, onPrograms: () -> Unit = {}, onChats: () -> Unit = {}, programCount: Int = 7) {
     var selectedDay by rememberSaveable { mutableIntStateOf(22) }
     var dayChanged by rememberSaveable { mutableStateOf(false) }
     var expandedTask by rememberSaveable { mutableIntStateOf(-1) }
@@ -123,11 +123,12 @@ fun TrainerHomeScreen() {
         }
         HomeNavigation(
             Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 10.dp),
+            programCount = programCount,
             onNavigate = { index ->
                 when (index) {
-                    1 -> showDetails("Мои клиенты (15)", "Требуют внимания: 3\nСтабильная динамика: 12\nНовые клиенты: 0")
-                    2 -> showDetails("Программы", "Библиотека программ пока пуста.")
-                    3 -> showDetails("Чат", "Раздел чатов будет доступен на следующем экране.")
+                    1 -> onClients()
+                    2 -> onPrograms()
+                    3 -> onChats()
                 }
             },
         )
@@ -333,18 +334,18 @@ private fun SmallClientTile(count: String, label: String, art: DrawableResource,
 }
 
 @Composable
-private fun HomeNavigation(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit) {
+internal fun HomeNavigation(modifier: Modifier = Modifier, selectedTab: Int = 0, programCount: Int = 7, onNavigate: (Int) -> Unit) {
     val labels = listOf("Главная", "Клиенты", "Программы", "Чат")
     val icons = listOf(Res.drawable.home, Res.drawable.clients, Res.drawable.programs, Res.drawable.chat)
-    val counts = listOf(0, 1, 7, 4)
+    val counts = listOf(0, 1, programCount, 4)
     Row(modifier.padding(horizontal = 26.dp).widthIn(max = 420.dp).fillMaxWidth()
         .clip(RoundedCornerShape(22.dp)).background(Color(0xFFCBCBC9)).padding(4.dp),
         verticalAlignment = Alignment.CenterVertically) {
         labels.forEachIndexed { index, label ->
             Column(Modifier.weight(1f).height(54.dp).clip(RoundedCornerShape(18.dp))
-                .background(if (index == 0) Lime.copy(alpha = .65f) else Color.Transparent)
+                .background(if (index == selectedTab) Lime.copy(alpha = .65f) else Color.Transparent)
                 .clickable(role = Role.Tab) { onNavigate(index) }
-                .semantics { stateDescription = if (index == 0) "Выбрано" else "Не выбрано" },
+                .semantics { stateDescription = if (index == selectedTab) "Выбрано" else "Не выбрано" },
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.width(44.dp).height(28.dp), contentAlignment = Alignment.Center) {
                     AssetIcon(icons[index], null, size = when (index) { 0 -> 20.dp; 1 -> 20.5.dp; else -> 24.dp })
