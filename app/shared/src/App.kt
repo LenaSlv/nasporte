@@ -24,6 +24,7 @@ fun App(registerBackHandler: @Composable (Boolean, () -> Unit) -> Unit = { _, _ 
         return id
     }
     MaterialTheme(
+        typography = fitTypography(),
         colorScheme = lightColorScheme(
             primary = Color(0xFF0E2E16),
             secondary = Color(0xFFB6F500),

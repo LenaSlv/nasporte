@@ -43,14 +43,14 @@ internal val Forest = Color(0xFF0E2E16)
 internal val Lime = Color(0xFFB6F500)
 internal val Page = Color(0xFFEDEDEE)
 internal val Card = Color(0xFFF7F7F8)
-internal val Tile = Color(0xFFE9E9EA)
+internal val Tile = Color.White
 
 private data class Appointment(val time: String, val name: String, val format: String, val day: Int = 22)
 
 private val InitialAppointments = listOf(
-    Appointment("09:30", "Константин Евсеев", "Персональная .Зал"),
+    Appointment("09:30", "Константин Евсеев", "Персональная · Зал"),
     Appointment("11:00", "Константин Салтыков-Щедрин", "Онлайн"),
-    Appointment("19:30", "Илья Морозов", "Персональная .Зал"),
+    Appointment("19:30", "Илья Морозов", "Персональная · Зал"),
 )
 
 private data class HomeTask(val title: String, val count: Int, val details: List<String>)
@@ -86,7 +86,7 @@ fun TrainerHomeScreen(onClients: () -> Unit = {}, onPrograms: () -> Unit = {}, o
         Column(Modifier.fillMaxSize()) {
             Column(
                 Modifier.fillMaxWidth().background(
-                    Brush.horizontalGradient(listOf(Color(0xFF020B07), Color(0xFF0E2E16))),
+                    FitScreenBrush,
                 ).statusBarsPadding(),
             ) {
                 HomeHeader(
@@ -101,14 +101,14 @@ fun TrainerHomeScreen(onClients: () -> Unit = {}, onPrograms: () -> Unit = {}, o
                 }, { showCalendar = true })
             }
             LazyColumn(
-                Modifier.weight(1f).fillMaxWidth().background(Forest)
+                Modifier.weight(1f).fillMaxWidth().background(Color.White)
                     .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)).background(Page),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 108.dp),
+                contentPadding = PaddingValues(bottom = 108.dp),
             ) {
                 item {
-                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(Modifier.fillMaxWidth().background(Color.White), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Schedule(
-                            title = if (dayChanged) "$selectedDay октября" else "Сегодня, 13 октября",
+                            title = if (dayChanged) "$selectedDay октября" else "Понедельник, 22 октября",
                             appointments = today,
                             onAdd = { showAdd = true },
                             onAppointment = { showDetails(it.name, "${it.time} · ${it.format}") },
@@ -135,11 +135,11 @@ fun TrainerHomeScreen(onClients: () -> Unit = {}, onPrograms: () -> Unit = {}, o
     }
 
     if (dialogTitle != null) {
-        AlertDialog(
+        FitDialog(
             onDismissRequest = { dialogTitle = null },
             title = { Text(dialogTitle.orEmpty()) },
             text = { Text(dialogBody) },
-            confirmButton = { TextButton(onClick = { dialogTitle = null }) { Text("Закрыть") } },
+            confirmButton = { FitTextButton(onClick = { dialogTitle = null }) { Text("Закрыть") } },
         )
     }
     if (showCalendar) {
@@ -160,15 +160,15 @@ fun TrainerHomeScreen(onClients: () -> Unit = {}, onPrograms: () -> Unit = {}, o
 @Composable
 private fun HomeHeader(onProfile: () -> Unit, onNotifications: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp),
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top,
     ) {
         Image(painterResource(Res.drawable.trainer_photo), "Мой профиль",
             Modifier.size(40.dp).clip(CircleShape).clickable(onClick = onProfile), contentScale = ContentScale.Crop)
-        Column(Modifier.weight(1f).clickable(onClick = onProfile).padding(top = 10.dp)) {
-            Text("Привет, Александр!", fontSize = 22.sp, lineHeight = 26.sp, fontWeight = FontWeight.SemiBold,
+        Column(Modifier.weight(1f).clickable(onClick = onProfile)) {
+            Text("Привет, Александр!", fontSize = 22.sp, lineHeight = 27.sp, fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFF5F5F5), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("Перейти в мой профиль", color = Color(0xFF9EA89C), fontSize = 12.sp, lineHeight = 14.sp)
+            Text("Перейти в мой профиль  ›", color = Color(0xFF9EA89C), fontSize = 12.sp, lineHeight = 14.sp, fontWeight = FontWeight.Medium)
         }
         Box(Modifier.size(44.dp)) {
             Box(
@@ -201,7 +201,7 @@ private fun WeekStrip(selected: Int, trainingDays: Set<Int>, onSelect: (Int) -> 
                     .padding(vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // The repeated weekday label follows the supplied design.
-                Text("ПН", color = if (active) Lime else Color(0xFF9EA89C),
+                Text(ShortWeekdays[(day - 22 + 7) % 7].uppercase(), color = if (active) Lime else Color(0xFF9EA89C),
                     fontSize = 10.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold)
                 Text(day.toString(), color = if (active) Lime else Color.White, fontSize = 16.sp,
                     lineHeight = 22.sp, fontWeight = FontWeight.Bold)
@@ -215,15 +215,15 @@ private fun WeekStrip(selected: Int, trainingDays: Set<Int>, onSelect: (Int) -> 
 
 @Composable
 private fun Schedule(title: String, appointments: List<Appointment>, onAdd: () -> Unit, onAppointment: (Appointment) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Page).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(title, fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold, color = Ink)
+                Text(title, fontSize = 16.sp, lineHeight = 19.2.sp, fontWeight = FontWeight.SemiBold, color = Ink)
                 Text(if (appointments.size == 3) "3 клиента на тренировку" else "Тренировок: ${appointments.size}",
                     fontSize = 14.sp, lineHeight = 17.sp, color = Muted)
             }
-            Text("+ Добавить", Modifier.clip(RoundedCornerShape(4.dp)).clickable(onClick = onAdd).padding(vertical = 2.dp),
-                fontSize = 14.sp, lineHeight = 16.sp, color = Forest, fontWeight = FontWeight.SemiBold)
+            Text("Добавить +", Modifier.clip(RoundedCornerShape(8.dp)).background(Color(0xFFE0E0E0)).clickable(onClick = onAdd).padding(horizontal = 8.dp, vertical = 4.dp),
+                fontSize = 12.sp, lineHeight = 16.sp, color = Ink, fontWeight = FontWeight.SemiBold)
         }
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Card)) {
             if (appointments.isEmpty()) {
@@ -232,7 +232,7 @@ private fun Schedule(title: String, appointments: List<Appointment>, onAdd: () -
             appointments.forEachIndexed { index, appointment ->
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable { onAppointment(appointment) },
                     verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.width(41.dp).fillMaxHeight().background(Color(0xFF1C1C1F)).padding(vertical = 12.dp),
+                    Column(Modifier.width(41.dp).fillMaxHeight().background(Color(0xFF0A2010)).padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text(appointment.time.substringBefore(':'), color = Color(0xFFC1FF28), fontSize = 14.sp,
                             lineHeight = 18.sp, fontWeight = FontWeight.Bold)
@@ -246,11 +246,12 @@ private fun Schedule(title: String, appointments: List<Appointment>, onAdd: () -
                         Text(appointment.name, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold,
                             color = Ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(appointment.format, fontSize = 12.sp, lineHeight = 18.sp, color = Muted,
+                            fontWeight = if (appointment.format == "Онлайн") FontWeight.Normal else FontWeight.Medium,
                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     AssetIcon(Res.drawable.chevron_right, null, Modifier.padding(start = 8.dp, end = 16.dp))
                 }
-                if (index != appointments.lastIndex) HorizontalDivider(thickness = .5.dp, color = Color(0xFFB5B5B8))
+                if (index != appointments.lastIndex) HorizontalDivider(thickness = .5.dp, color = Color(0xFFEDEDEE))
             }
         }
     }
@@ -259,15 +260,15 @@ private fun Schedule(title: String, appointments: List<Appointment>, onAdd: () -
 @Composable
 private fun SectionHeading(title: String, onViewAll: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, Modifier.weight(1f), fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.Bold, color = Ink)
-        Text("Смотреть все", Modifier.clip(RoundedCornerShape(4.dp)).clickable(onClick = onViewAll),
-            fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold, color = Forest)
+        Text(title, Modifier.weight(1f), fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, color = Ink)
+        Text("Все ›", Modifier.clip(RoundedCornerShape(8.dp)).background(Color(0xFFE0E0E0)).clickable(onClick = onViewAll).padding(horizontal = 8.dp, vertical = 4.dp),
+            fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold, color = Ink)
     }
 }
 
 @Composable
 private fun TasksSection(expanded: Int, onExpand: (Int) -> Unit, onViewAll: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Page).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionHeading("Мои задачи (15)", onViewAll)
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Card)) {
             HomeTasks.forEachIndexed { index, task ->
@@ -285,7 +286,7 @@ private fun TasksSection(expanded: Int, onExpand: (Int) -> Unit, onViewAll: () -
                         task.details.forEach { Text(it, color = Muted, fontSize = 13.sp, lineHeight = 18.sp) }
                     }
                 }
-                if (index != HomeTasks.lastIndex) HorizontalDivider(thickness = .5.dp, color = Color(0xFFD3D3D5))
+                if (index != HomeTasks.lastIndex) HorizontalDivider(thickness = .5.dp, color = Color(0xFFEDEDEE))
             }
         }
     }
@@ -293,22 +294,22 @@ private fun TasksSection(expanded: Int, onExpand: (Int) -> Unit, onViewAll: () -
 
 @Composable
 private fun ClientsSection(onDetails: (String, String) -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White).padding(12.dp),
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Page).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionHeading("Мои клиенты (15)") {
             onDetails("Мои клиенты (15)", "Требуют внимания: 3\nСтабильная динамика: 12\nНовые клиенты: 0")
         }
-        Row(Modifier.fillMaxWidth().height(202.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(16.dp)).background(Tile)
+        Row(Modifier.fillMaxWidth().height(206.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(148f).fillMaxHeight().clip(RoundedCornerShape(16.dp)).background(Tile)
                 .clickable { onDetails("Требуют внимания (3)", HomeTasks[0].details.joinToString("\n")) }) {
                 Image(painterResource(Res.drawable.attention_art), null,
-                    Modifier.offset(x = 32.dp, y = 98.dp).size(142.dp))
+                    Modifier.offset(x = 40.dp, y = 79.dp).size(142.dp))
                 Column(Modifier.padding(13.dp)) {
-                    Text("3", fontSize = 44.sp, lineHeight = 52.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF0077F))
+                    Text("3", fontSize = 44.sp, lineHeight = 53.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF0077F))
                     Text("Требуют\nвнимания", fontSize = 14.sp, lineHeight = 17.sp, color = Ink)
                 }
             }
-            Column(Modifier.weight(1.1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.weight(187f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SmallClientTile("12", "Стабильная\nдинамика", Res.drawable.progress_art, Modifier.weight(1f), true) {
                     onDetails("Стабильная динамика", "12 клиентов занимаются по плану.")
                 }
@@ -324,10 +325,10 @@ private fun ClientsSection(onDetails: (String, String) -> Unit) {
 private fun SmallClientTile(count: String, label: String, art: DrawableResource, modifier: Modifier, progress: Boolean, onClick: () -> Unit) {
     Box(modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Tile).clickable(onClick = onClick)) {
         Image(painterResource(art), null,
-            Modifier.align(Alignment.TopEnd).offset(x = if (progress) 0.dp else 9.dp, y = if (progress) 33.dp else 20.dp)
+            Modifier.align(Alignment.TopEnd).offset(x = if (progress) 0.dp else 9.dp, y = 20.dp)
                 .size(if (progress) 81.dp else 99.dp))
         Column(Modifier.padding(13.dp)) {
-            Text(count, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, color = Ink)
+            Text(count, fontSize = 32.sp, lineHeight = 39.sp, fontWeight = FontWeight.Bold, color = Ink)
             Text(label, fontSize = 14.sp, lineHeight = 17.sp, color = Ink)
         }
     }
@@ -335,21 +336,22 @@ private fun SmallClientTile(count: String, label: String, art: DrawableResource,
 
 @Composable
 internal fun HomeNavigation(modifier: Modifier = Modifier, selectedTab: Int = 0, programCount: Int = 7, onNavigate: (Int) -> Unit) {
-    val labels = listOf("Главная", "Клиенты", "Программы", "Чат")
+    val labels = listOf("Главная", "Клиенты", "Материалы", "Чат")
     val icons = listOf(Res.drawable.home, Res.drawable.clients, Res.drawable.programs, Res.drawable.chat)
-    val counts = listOf(0, 1, programCount, 4)
-    Row(modifier.padding(horizontal = 26.dp).widthIn(max = 420.dp).fillMaxWidth()
-        .clip(RoundedCornerShape(22.dp)).background(Color(0xFFCBCBC9)).padding(4.dp),
+    val counts = listOf(0, if (selectedTab == 0) 1 else 0, 0, 0)
+    Row(modifier.padding(horizontal = 22.dp).widthIn(max = 420.dp).fillMaxWidth()
+        .clip(RoundedCornerShape(22.dp)).background(Color(0xFFF1F1F0).copy(alpha = .96f))
+        .border(.5.dp, Color.White, RoundedCornerShape(22.dp)).padding(horizontal = 6.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically) {
         labels.forEachIndexed { index, label ->
             Column(Modifier.weight(1f).height(54.dp).clip(RoundedCornerShape(18.dp))
-                .background(if (index == selectedTab) Lime.copy(alpha = .65f) else Color.Transparent)
+                .background(if (index == selectedTab) Color(0xFFCDF566) else Color.Transparent)
                 .clickable(role = Role.Tab) { onNavigate(index) }
                 .semantics { stateDescription = if (index == selectedTab) "Выбрано" else "Не выбрано" },
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.width(44.dp).height(28.dp), contentAlignment = Alignment.Center) {
                     AssetIcon(icons[index], null, size = when (index) { 0 -> 20.dp; 1 -> 20.5.dp; else -> 24.dp })
-                    if (counts[index] > 0) CountBadge(counts[index], Modifier.align(Alignment.TopEnd), accent = true)
+                    if (counts[index] > 0) CountBadge(counts[index], Modifier.align(Alignment.TopEnd), notification = true)
                 }
                 Text(label, fontSize = 10.sp, lineHeight = 12.sp, fontWeight = FontWeight.SemiBold, color = Ink, maxLines = 1)
             }
@@ -359,9 +361,9 @@ internal fun HomeNavigation(modifier: Modifier = Modifier, selectedTab: Int = 0,
 
 @Composable
 private fun CountBadge(count: Int, modifier: Modifier = Modifier, notification: Boolean = false, accent: Boolean = false) {
-    Badge(modifier = modifier, containerColor = if (notification) Color(0xFFB3261E) else Color(0xFF1A201C),
-        contentColor = if (notification) Color.White else if (accent) Lime else Color(0xFFFAFFE5)) {
-        Text(count.toString(), fontSize = 11.sp, lineHeight = 14.sp)
+    Box(modifier.size(16.dp).background(if (notification) Color(0xFFB3261E) else Color(0xFF0A2010), CircleShape),
+        contentAlignment = Alignment.Center) {
+        Text(count.toString(), fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium, color = if (notification) Color.White else Lime)
     }
 }
 
@@ -372,7 +374,7 @@ private fun AssetIcon(resource: DrawableResource, description: String?, modifier
 
 @Composable
 private fun CalendarDialog(selected: Int, onDismiss: () -> Unit, onSelect: (Int) -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Октябрь 2026") }, text = {
+    FitDialog(onDismissRequest = onDismiss, title = { Text("Октябрь 2026") }, text = {
         Column {
             Row(Modifier.fillMaxWidth()) {
                 listOf("ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС").forEach {
@@ -389,7 +391,7 @@ private fun CalendarDialog(selected: Int, onDismiss: () -> Unit, onSelect: (Int)
                 }
             }
         }
-    }, confirmButton = { TextButton(onClick = onDismiss) { Text("Закрыть") } })
+    }, confirmButton = { FitTextButton(onClick = onDismiss) { Text("Закрыть") } })
 }
 
 @Composable
@@ -398,21 +400,21 @@ private fun AddAppointmentDialog(day: Int, onDismiss: () -> Unit, onAdd: (String
     var time by rememberSaveable { mutableStateOf("") }
     var online by rememberSaveable { mutableStateOf(false) }
     val validTime = Regex("([01][0-9]|2[0-3]):[0-5][0-9]").matches(time)
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("Тренировка · $day октября") }, text = {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { name = it.replace('\t', ' ').replace('\n', ' ') },
+    FitDialog(onDismissRequest = onDismiss, title = { Text("Тренировка · $day октября") }, text = {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Page).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            FitTextField(name, { name = it.replace('\t', ' ').replace('\n', ' ') },
                 label = { Text("Имя клиента") }, singleLine = true)
-            OutlinedTextField(time, { time = it.take(5) }, label = { Text("Время, ЧЧ:ММ") },
+            FitTextField(time, { time = it.take(5) }, label = { Text("Время, ЧЧ:ММ") },
                 singleLine = true, isError = time.isNotEmpty() && !validTime,
                 supportingText = { if (time.isNotEmpty() && !validTime) Text("Укажите время от 00:00 до 23:59") })
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(online, { online = it })
+                FitCheckbox(online, { online = it })
                 Text("Онлайн-тренировка", fontSize = 14.sp)
             }
         }
     }, confirmButton = {
-        TextButton(enabled = name.isNotBlank() && validTime, onClick = {
-            onAdd(time, name.trim(), if (online) "Онлайн" else "Персональная .Зал")
+        FitTextButton(enabled = name.isNotBlank() && validTime, onClick = {
+            onAdd(time, name.trim(), if (online) "Онлайн" else "Персональная · Зал")
         }) { Text("Добавить") }
-    }, dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } })
+    }, dismissButton = { FitTextButton(onClick = onDismiss) { Text("Отмена") } })
 }

@@ -52,37 +52,26 @@ internal fun ProgramSelectionScreen(
     WorkoutScaffold("Назначить программу", "Клиент: $clientName", onBack) {
         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (showWarning) item {
-                WorkoutPanel(color = Color(0xFFF1D3D8)) {
+                WorkoutPanel(color = Color(0xFFF5DCD9)) {
                     Row(verticalAlignment = Alignment.Top) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("Клиент еще не заполнил анкету", fontSize = 14.sp, color = Color(0xFFFF3547), fontWeight = FontWeight.Medium)
-                            Text("Отправьте анкету клиенту, чтобы получить данные для программы", fontSize = 14.sp, color = Ink)
+                            Text("Клиент еще не заполнил анкету", fontSize = 14.sp, lineHeight = 17.sp, color = Color(0xFFCF2110), fontWeight = FontWeight.SemiBold)
+                            Text("Отправьте анкету клиенту, чтобы получить данные для программы", fontSize = 14.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium, color = Ink)
                         }
                         WorkoutIconButton(Res.drawable.workout_close, "Скрыть уведомление", { showWarning = false })
                     }
                     WorkoutAction("Отправить анкету", onQuestionnaire, outlined = true, compact = true)
                 }
             }
-            item { WorkoutHeading("Создать на основе") }
+            item { WorkoutHeading("Создать программу на основе") }
             item {
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color(0xFFD7D6DE)).padding(2.dp)) {
-                    listOf("Шаблоны", "Мои программы").forEachIndexed { index, text ->
-                        val active = fromClients == (index == 1)
-                        Box(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(if (active) Color.White else Color.Transparent)
-                            .clickable(role = Role.Tab) { fromClients = index == 1; selectedId = -1 }.semantics { this.selected = active }
-                            .padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                            Text(text, fontSize = 13.sp, color = Ink)
-                        }
-                    }
-                }
+                FitSegments(listOf("Шаблоны", "Программы клиентов"), if (fromClients) 1 else 0,
+                    { fromClients = it == 1; selectedId = -1 }, background = Color(0xFFE0E0E0))
             }
             item {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(query, { query = it }, Modifier.weight(1f), placeholder = { Text("Поиск") }, singleLine = true,
-                        leadingIcon = { WorkoutIcon(Res.drawable.workout_search, null) }, shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White,
-                            focusedContainerColor = Color.White, unfocusedBorderColor = Color.Transparent))
-                    Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(Color.White), contentAlignment = Alignment.Center) {
+                    Box(Modifier.weight(1f)) { ClientSearch(query, { query = it }) }
+                    Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White), contentAlignment = Alignment.Center) {
                         WorkoutIconButton(Res.drawable.workout_filter, "Фильтры программ", { showFilters = true })
                     }
                 }
@@ -98,24 +87,27 @@ internal fun ProgramSelectionScreen(
                 val active = entry.id == selectedId
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)
                     .then(if (active) Modifier.border(BorderStroke(1.5.dp, Ink), RoundedCornerShape(16.dp)) else Modifier)
-                    .clickable(role = Role.RadioButton) { selectedId = entry.id }.semantics { this.selected = active }.padding(14.dp),
+                    .clickable(role = Role.RadioButton) { selectedId = entry.id }.semantics { this.selected = active }.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(template.title, Modifier.weight(1f), color = Color(0xFF172C22), fontSize = 16.sp,
+                        Text(template.title, Modifier.weight(1f), color = Color(0xFF212121), fontSize = 16.sp,
                             lineHeight = 20.sp, fontWeight = FontWeight.SemiBold)
                         WorkoutIcon(Res.drawable.workout_disclosure, null, size = 18.dp)
                     }
-                    Text("${template.weeks.size} нед.  |  ${template.weeks.firstOrNull()?.days?.size ?: 0} дня/нед", fontSize = 14.sp, color = Color(0xFF8A958F))
+                    Text("${template.weeks.size} недель  |  ${template.weeks.firstOrNull()?.days?.size ?: 0} дня/нед", fontSize = 14.sp, lineHeight = 17.sp, color = Muted)
                     if (fromClients) Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
                         Image(painterResource(Res.drawable.program_avatar), null, Modifier.size(24.dp).clip(CircleShape))
-                        if (index > 0) WorkoutIcon(Res.drawable.workout_group, null, size = 24.dp)
+                        if (index > 0) Box(Modifier.size(24.dp).border(2.dp, Color.White, CircleShape)
+                            .background(Color(0xFFF56B00), CircleShape), contentAlignment = Alignment.Center) {
+                            Text("МД", color = Color.White, fontSize = 8.sp, lineHeight = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
         }
         Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             WorkoutAction("Создать новую программу", onCreate, outlined = true)
-            WorkoutAction(if (fromClients) "Создать копию выбранной" else "Продолжить с выбранной",
+            WorkoutAction(if (fromClients) "Создать копию" else "Продолжить",
                 { chosen?.let { onSelect(it.program.copy(weekdays = emptyList(), scheduleApplied = false, additionalWorkouts = emptyList())) } }, enabled = chosen != null)
         }
     }
@@ -129,24 +121,25 @@ internal fun ProgramSelectionScreen(
         ModalBottomSheet(onDismissRequest = { showFilters = false }, containerColor = Card) {
             Column(Modifier.fillMaxWidth().imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Фильтры", Modifier.weight(1f), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text("Фильтры", Modifier.weight(1f), fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                     WorkoutIconButton(Res.drawable.workout_close, "Закрыть фильтры", { showFilters = false })
                 }
                 WorkoutHeading("Шаблон")
                 FilterFamilyDropdown(pendingFamily) { pendingFamily = it }
-                Text("Покажем только программы, созданные на основе этого шаблона", fontSize = 14.sp)
+                Text("Покажем только программы, созданные на основе этого шаблона", fontSize = 14.sp, lineHeight = 17.sp)
                 WorkoutHeading("Длительность программы, недель")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(pendingMin, { pendingMin = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f),
-                        label = { Text("От") }, singleLine = true, isError = !valid)
-                    OutlinedTextField(pendingMax, { pendingMax = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f),
-                        label = { Text("До") }, singleLine = true, isError = !valid)
+                    FitTextField(pendingMin, { pendingMin = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f),
+                        placeholder = { Text("От", fontSize = 16.sp, lineHeight = 20.sp) }, singleLine = true, isError = !valid)
+                    FitTextField(pendingMax, { pendingMax = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f),
+                        placeholder = { Text("До", fontSize = 16.sp, lineHeight = 20.sp) }, singleLine = true, isError = !valid)
                 }
                 if (!valid) Text("Укажите диапазон от 1 до 52 недель", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-                WorkoutAction("Сбросить", { pendingMin = ""; pendingMax = ""; pendingFamily = "Все шаблоны" }, outlined = true)
+                WorkoutAction("Сбросить", { pendingMin = ""; pendingMax = ""; pendingFamily = "Все шаблоны" }, outlined = true,
+                    fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold, height = 48.dp)
                 WorkoutAction("Применить фильтры", {
                     minWeeks = pendingMin; maxWeeks = pendingMax; family = pendingFamily; showFilters = false
-                }, enabled = valid)
+                }, enabled = valid, fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold, height = 48.dp)
             }
         }
     }
@@ -156,10 +149,11 @@ internal fun ProgramSelectionScreen(
 private fun FilterFamilyDropdown(value: String, onChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        WorkoutAction("$value  ▾", { expanded = true }, outlined = true)
-        DropdownMenu(expanded, { expanded = false }) {
+        WorkoutAction("$value  ▾", { expanded = true }, outlined = true, fontSize = 16.sp, lineHeight = 20.sp,
+            fontWeight = FontWeight.Normal, height = 48.dp)
+        FitDropdownMenu(expanded, { expanded = false }) {
             listOf("Все шаблоны", "Силовая база", "Фулбоди для начинающих").forEach {
-                DropdownMenuItem(text = { Text(it) }, onClick = { onChange(it); expanded = false })
+                FitDropdownMenuItem(text = { Text(it) }, onClick = { onChange(it); expanded = false })
             }
         }
     }

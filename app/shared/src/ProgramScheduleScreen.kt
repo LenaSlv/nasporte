@@ -49,7 +49,8 @@ internal fun ProgramScheduleScreen(
                         .clickable(role = Role.Button, onClick = onEditProgram).padding(12.dp),
                         verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(15.dp)) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(program.title, fontSize = 14.sp, lineHeight = 20.sp, color = Ink, fontWeight = FontWeight.Bold)
+                            Text(program.title, fontSize = if (program.scheduleApplied) 16.sp else 14.sp, lineHeight = 20.sp, color = Ink,
+                                fontWeight = if (program.scheduleApplied) FontWeight.SemiBold else FontWeight.Bold)
                             Text("Редактировать", fontSize = 14.sp, lineHeight = 20.sp,
                                 color = Color(0xFF7D39EB), fontWeight = FontWeight.SemiBold)
                         }
@@ -76,7 +77,7 @@ internal fun ProgramScheduleScreen(
                             WorkoutIcon(Res.drawable.workout_up, "Свернуть настройки")
                         }
                         Text("Выберите дату начала программы", fontSize = 14.sp, color = Ink)
-                        OutlinedTextField(program.start.display, {}, Modifier.fillMaxWidth(), readOnly = true, singleLine = true,
+                        FitTextField(program.start.display, {}, Modifier.fillMaxWidth(), readOnly = true, singleLine = true, fontWeight = FontWeight.Medium,
                             shape = RoundedCornerShape(12.dp), trailingIcon = {
                                 WorkoutIconButton(Res.drawable.workout_calendar, "Выбрать дату начала", { showDate = true })
                             })
@@ -103,23 +104,22 @@ internal fun ProgramScheduleScreen(
                                     Text("Это время будет подставлено в каждую тренировку", fontSize = 12.sp,
                                         lineHeight = 15.sp, color = Color(0xFF545B66))
                                 }
-                                Switch(program.repeatWeekly, { onChange(program.copy(repeatWeekly = it, scheduleApplied = false)) },
-                                    colors = SwitchDefaults.colors(checkedTrackColor = Purple, checkedThumbColor = Color.White))
+                                FitSwitch(program.repeatWeekly, { onChange(program.copy(repeatWeekly = it, scheduleApplied = false)) })
                             }
                             HorizontalDivider(thickness = .5.dp, color = Color(0xFF939CA7))
                             if (program.weekdays.isEmpty()) Text("Выберите дни недели", color = Muted, fontSize = 13.sp)
                             program.weekdays.sorted().forEach { index ->
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Text(WeekdayNames[index], Modifier.weight(1f), fontSize = 14.sp, color = Ink)
-                                    OutlinedTextField(program.times[index], { value ->
+                                    FitTextField(program.times[index], { value ->
                                         onChange(program.copy(times = program.times.mapIndexed { i, time ->
                                             if (i == index) value.filter { it.isDigit() || it == ':' }.take(5) else time
                                         }, scheduleApplied = false))
                                     }, Modifier.width(116.dp).semantics { contentDescription = "Время: ${WeekdayNames[index]}" }, singleLine = true,
+                                        fontSize = 14.sp, fontWeight = FontWeight.Medium,
                                         isError = !Regex("([01][0-9]|2[0-3]):[0-5][0-9]").matches(program.times[index]),
                                         trailingIcon = { WorkoutIcon(Res.drawable.workout_clock, null) },
-                                        shape = RoundedCornerShape(14.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White))
+                                        shape = RoundedCornerShape(14.dp))
                                 }
                             }
                             if (!validTimes) Text("Укажите время в формате ЧЧ:ММ от 00:00 до 23:59", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
@@ -143,7 +143,7 @@ internal fun ProgramScheduleScreen(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         WorkoutHeading("${selectedDate.day} ${monthNames[selectedDate.month - 1]}", Modifier.weight(1f))
-                        TextButton(onClick = { showAll = !showAll }) { Text(if (showAll) "На день" else "Все ›", color = Ink) }
+                        FitTextButton(onClick = { showAll = !showAll }) { Text(if (showAll) "На день" else "Все ›", color = Ink) }
                     }
                 }
                 val visible = if (showAll) workouts else workouts.filter { it.date.key == selectedKey }
@@ -168,7 +168,7 @@ internal fun ProgramScheduleScreen(
                                 })
                             })
                         }
-                        WorkoutAction("Добавить упражнение", { onAddExercise(workout.day.id) }, color = Color.Black, compact = true)
+                        FitTextButton({ onAddExercise(workout.day.id) }) { Text("Добавить упражнение", color = Purple, fontSize = 14.sp) }
                     }
                 }
             }
@@ -187,11 +187,11 @@ internal fun ProgramScheduleScreen(
     if (showDate) {
         var pickerMonth by rememberSaveable { mutableStateOf(program.start.key) }
         var pickerDate by rememberSaveable { mutableStateOf(program.start.key) }
-        AlertDialog(onDismissRequest = { showDate = false }, title = { Text("Начало программы") }, text = {
+        FitDialog(onDismissRequest = { showDate = false }, title = { Text("Начало программы") }, text = {
             WorkoutCalendar(WorkoutDate.parse(pickerMonth), WorkoutDate.parse(pickerDate), { pickerMonth = it.key }, { pickerDate = it.key })
-        }, confirmButton = { TextButton(onClick = {
+        }, confirmButton = { FitTextButton(onClick = {
             onChange(program.copy(start = WorkoutDate.parse(pickerDate), scheduleApplied = false))
             monthKey = pickerDate; selectedKey = pickerDate; showDate = false
-        }) { Text("Выбрать") } }, dismissButton = { TextButton(onClick = { showDate = false }) { Text("Отмена") } })
+        }) { Text("Выбрать") } }, dismissButton = { FitTextButton(onClick = { showDate = false }) { Text("Отмена") } })
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.testmmp.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -42,13 +43,13 @@ internal const val NewClientName = "Марина Кузнецова"
 @Composable
 internal fun ClientSearch(value: String, onChange: (String) -> Unit, placeholder: String = "Поиск") {
     BasicTextField(value, onChange, Modifier.fillMaxWidth(), singleLine = true,
-        textStyle = TextStyle(color = Ink, fontSize = 16.sp), decorationBox = { inner ->
-            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).clip(RoundedCornerShape(12.dp))
+        textStyle = TextStyle(color = Ink, fontSize = 16.sp, lineHeight = 24.sp, fontFamily = fitInter()), decorationBox = { inner ->
+            Row(Modifier.fillMaxWidth().height(44.dp).clip(RoundedCornerShape(12.dp))
                 .background(Color.White).padding(12.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(painterResource(Res.drawable.workout_search), null, Modifier.size(24.dp), tint = Color(0xFFA6B0A9))
                 Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) Text(placeholder, color = Muted, fontSize = 16.sp)
+                    if (value.isEmpty()) Text(placeholder, color = Muted, fontSize = 16.sp, lineHeight = 24.sp)
                     inner()
                 }
             }
@@ -69,8 +70,9 @@ internal fun ClientTopBar(title: String, subtitle: String? = null, onBack: (() -
             Spacer(Modifier.width(16.dp))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, fontSize = if (avatar) 16.sp else 20.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-            if (subtitle != null) Text(subtitle, fontSize = 12.sp, color = if (avatar) Lime else Color(0xFFADB6AD))
+            Text(title, fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold, fontFamily = fitInter(), color = Color.White)
+            if (subtitle != null) Text(subtitle, fontSize = if (avatar) 14.sp else 12.sp, lineHeight = 16.sp,
+                fontWeight = FontWeight.Medium, letterSpacing = .5.sp, color = if (avatar) Lime else Color(0xFFADB6AD))
         }
         actions()
     }
@@ -104,7 +106,7 @@ private fun ClientSheet(title: String, onDismiss: () -> Unit, content: @Composab
                 verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f), color = Color(0xFF2B2D33), fontSize = 22.sp,
                     lineHeight = 28.sp, fontWeight = FontWeight.Bold)
-                IconButton(onClick = onDismiss, modifier = Modifier.size(44.dp)) {
+                FitIconButton(onClick = onDismiss, modifier = Modifier.size(44.dp)) {
                     WorkoutIcon(Res.drawable.client_close, "Закрыть")
                 }
             }
@@ -127,9 +129,9 @@ internal fun ClientInvitationSheet(onDismiss: () -> Unit, onShare: ((String) -> 
                 Modifier.size(245.dp).clip(RoundedCornerShape(24.dp)))
             Spacer(Modifier.height(24.dp))
             Text("Константин Салтыков-Щедрин", Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                fontSize = 20.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, color = Ink)
+                fontSize = 20.sp, lineHeight = 24.sp, letterSpacing = .2.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, color = Ink)
             Spacer(Modifier.height(8.dp))
-            Text("Персональный фитнес-тренер", fontSize = 16.sp, color = Color(0xFF707F8D), textAlign = TextAlign.Center)
+            Text("Персональный фитнес-тренер", fontSize = 16.sp, lineHeight = 20.sp, letterSpacing = .2.sp, color = Color(0xFF707F8D), textAlign = TextAlign.Center)
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ClientButton(if (copied) "Ссылка скопирована" else "Копировать ссылку", {
@@ -138,20 +140,21 @@ internal fun ClientInvitationSheet(onDismiss: () -> Unit, onShare: ((String) -> 
             ClientButton("Поделиться", { if (onShare != null) onShare(ClientInviteLink) else sharePreview = true })
         }
     }
-    if (sharePreview) AlertDialog(onDismissRequest = { sharePreview = false }, title = { Text("Персональная ссылка") },
-        text = { Text(ClientInviteLink) }, confirmButton = { TextButton(onClick = {
+    if (sharePreview) FitDialog(onDismissRequest = { sharePreview = false }, title = { Text("Персональная ссылка") },
+        text = { Text(ClientInviteLink) }, confirmButton = { FitTextButton(onClick = {
             clipboard.setText(AnnotatedString(ClientInviteLink)); copied = true; sharePreview = false
-        }) { Text("Копировать") } }, dismissButton = { TextButton(onClick = { sharePreview = false }) { Text("Закрыть") } })
+        }) { Text("Копировать") } }, dismissButton = { FitTextButton(onClick = { sharePreview = false }) { Text("Закрыть") } })
 }
 
 @Composable
 internal fun NewClientRequestDialog(onDismiss: () -> Unit, onOpen: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Column(Modifier.widthIn(max = 360.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(Modifier.fillMaxWidth().padding(horizontal = 24.dp), contentAlignment = Alignment.Center) {
+        Column(Modifier.widthIn(max = 313.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White)
             .verticalScroll(rememberScrollState()).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+                FitIconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
                     WorkoutIcon(Res.drawable.client_close, "Закрыть")
                 }
             }
@@ -164,11 +167,12 @@ internal fun NewClientRequestDialog(onDismiss: () -> Unit, onOpen: () -> Unit) {
             Text("У вас новый запрос!", color = Color(0xFF1D1B20), fontSize = 24.sp, lineHeight = 32.sp,
                 fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
             Text("$NewClientName хочет начать тренировки с вами", color = Color(0xFF49454F),
-                fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
+                fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = .25.sp, textAlign = TextAlign.Center)
             Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ClientButton("Посмотреть позже", onDismiss, outline = true)
                 ClientButton("Перейти к запросу", onOpen)
             }
+        }
         }
     }
 }
@@ -190,7 +194,7 @@ internal fun ClientChatsScreen(programCount: Int, requestVisible: Boolean, onNav
     onOtherChat: () -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     var requestsOnly by rememberSaveable { mutableStateOf(false) }
-    Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(Color(0xFF020B07), Forest)))) {
+    Box(Modifier.fillMaxSize().background(FitScreenBrush)) {
         Column(Modifier.fillMaxSize()) {
             ClientTopBar("Чаты")
             LazyColumn(Modifier.weight(1f).fillMaxWidth().clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
@@ -199,7 +203,8 @@ internal fun ClientChatsScreen(programCount: Int, requestVisible: Boolean, onNav
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f)) { ClientSearch(query, { query = it }) }
-                        FilledTonalIconToggleButton(requestsOnly, { requestsOnly = it }) {
+                        FitIconButton({ requestsOnly = !requestsOnly }, Modifier.padding(start = 8.dp).size(44.dp)
+                            .clip(RoundedCornerShape(12.dp)).background(Color.White)) {
                             Icon(painterResource(Res.drawable.workout_filter), "Только заявки", tint = if (requestsOnly) Purple else Ink)
                         }
                     }
@@ -217,12 +222,12 @@ internal fun ClientChatsScreen(programCount: Int, requestVisible: Boolean, onNav
                         if (marina) ClientMarinaPhoto() else Image(painterResource(Res.drawable.client_chat_photo), null,
                             Modifier.size(40.dp).clip(CircleShape), contentScale = ContentScale.Crop)
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold)
                             Text(if (marina) "Здравствуйте! Я хотела бы начать…" else if (index == 0) "Отчёт от тренировки" else "Запрос о переносе тренировки",
-                                fontSize = 14.sp, color = Color(0xFF152820), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                fontSize = 14.sp, lineHeight = 18.sp, color = Color(0xFF152820), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("14:40", fontSize = 14.sp, color = Color(0xFF5A6E85))
+                            Text("14:40", fontSize = 14.sp, lineHeight = 18.sp, color = Color(0xFF5A6E85))
                             Badge(containerColor = Color(0xFFB3261E), contentColor = Color.White) { Text("1") }
                         }
                     }
@@ -256,15 +261,15 @@ internal fun ClientRequestChatScreen(accepted: Boolean, onBack: () -> Unit, onAc
     LaunchedEffect(messages.size, questionnaire) {
         if (messages.isNotEmpty() || questionnaire) list.animateScrollToItem(3 + messages.size + if (questionnaire) 1 else 0)
     }
-    Column(Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(Color(0xFF020B07), Forest))).imePadding()) {
+    Column(Modifier.fillMaxSize().background(FitScreenBrush).imePadding()) {
         ClientTopBar(NewClientName, "Онлайн", onBack, avatar = true) {
             Box {
                 WorkoutIconButton(Res.drawable.client_more, "Действия с запросом", { menu = true }, light = true)
-                DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem(text = { Text("Отправить анкету") }, onClick = { menu = false; questionnaire = true })
-                    if (!accepted) DropdownMenuItem(text = { Text("Принять запрос") }, onClick = { menu = false; onAccept() })
-                    if (!accepted) DropdownMenuItem(text = { Text("Отменить запрос") }, onClick = { menu = false; confirm = "Отменить запрос" })
-                    DropdownMenuItem(text = { Text("Заблокировать", color = MaterialTheme.colorScheme.error) },
+                FitDropdownMenu(menu, { menu = false }) {
+                    FitDropdownMenuItem(text = { Text("Отправить анкету") }, onClick = { menu = false; questionnaire = true })
+                    if (!accepted) FitDropdownMenuItem(text = { Text("Принять запрос") }, onClick = { menu = false; onAccept() })
+                    if (!accepted) FitDropdownMenuItem(text = { Text("Отменить запрос") }, onClick = { menu = false; confirm = "Отменить запрос" })
+                    FitDropdownMenuItem(text = { Text("Заблокировать", color = MaterialTheme.colorScheme.error) },
                         onClick = { menu = false; confirm = "Заблокировать пользователя" })
                 }
             }
@@ -290,27 +295,27 @@ internal fun ClientRequestChatScreen(accepted: Boolean, onBack: () -> Unit, onAc
             }
             Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = { notice = "Прикрепление файлов будет доступно после подключения чата." },
+                FitIconButton(onClick = { notice = "Прикрепление файлов будет доступно после подключения чата." },
                     modifier = Modifier.size(48.dp).background(Color(0xFFF0F0EF), CircleShape)) {
                     WorkoutIcon(Res.drawable.client_attachment, "Прикрепить файл")
                 }
                 BasicTextField(input, { input = it.take(2000) }, Modifier.weight(1f).heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(16.dp)).background(Color(0xFFF2F2F2)).padding(12.dp),
-                    textStyle = TextStyle(color = Ink, fontSize = 15.sp), maxLines = 4,
+                    textStyle = TextStyle(color = Ink, fontSize = 15.sp, lineHeight = 22.sp, fontFamily = fitInter()), maxLines = 4,
                     decorationBox = { inner -> if (input.isEmpty()) Text("Сообщение", color = Muted, fontSize = 15.sp); inner() })
-                IconButton(onClick = { if (input.isNotBlank()) { messages = messages + input.trim(); input = "" } },
+                FitIconButton(onClick = { if (input.isNotBlank()) { messages = messages + input.trim(); input = "" } },
                     enabled = input.isNotBlank(), modifier = Modifier.size(48.dp).background(Color(0xFFC6FF33), CircleShape)) {
                     WorkoutIcon(Res.drawable.client_send, "Отправить сообщение")
                 }
             }
         }
     }
-    if (notice != null) AlertDialog(onDismissRequest = { notice = null }, text = { Text(notice.orEmpty()) },
-        confirmButton = { TextButton(onClick = { notice = null }) { Text("Понятно") } })
-    if (confirm != null) AlertDialog(onDismissRequest = { confirm = null }, title = { Text("${confirm}?") },
+    if (notice != null) FitDialog(onDismissRequest = { notice = null }, text = { Text(notice.orEmpty()) },
+        confirmButton = { FitTextButton(onClick = { notice = null }) { Text("Понятно") } })
+    if (confirm != null) FitDialog(onDismissRequest = { confirm = null }, title = { Text("${confirm}?") },
         text = { Text(if (confirm == "Отменить запрос") "Заявка будет убрана из списка." else "Переписка с Мариной будет скрыта.") },
-        confirmButton = { TextButton(onClick = { val cancel = confirm == "Отменить запрос"; confirm = null; if (cancel) onCancel() else onBlock() }) { Text("Подтвердить") } },
-        dismissButton = { TextButton(onClick = { confirm = null }) { Text("Назад") } })
+        confirmButton = { FitTextButton(onClick = { val cancel = confirm == "Отменить запрос"; confirm = null; if (cancel) onCancel() else onBlock() }) { Text("Подтвердить") } },
+        dismissButton = { FitTextButton(onClick = { confirm = null }) { Text("Назад") } })
 }
 
 @Composable

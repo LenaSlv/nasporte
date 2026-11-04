@@ -109,20 +109,20 @@ internal fun ProgramLibraryFlow(
             editExercise = -1
         })
     }
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("Выйти без сохранения?") },
+    if (discard) FitDialog(onDismissRequest = { discard = false }, title = { Text("Выйти без сохранения?") },
         text = { Text("Изменения в программе будут потеряны.") },
-        confirmButton = { TextButton(onClick = { discard = false; editing = false }) { Text("Выйти") } },
-        dismissButton = { TextButton(onClick = { discard = false }) { Text("Продолжить редактирование") } })
+        confirmButton = { FitTextButton(onClick = { discard = false; editing = false }) { Text("Выйти") } },
+        dismissButton = { FitTextButton(onClick = { discard = false }) { Text("Продолжить редактирование") } })
     library.find { it.id == deletingId && !it.isTemplate }?.let { entry ->
-        AlertDialog(onDismissRequest = { deletingId = -1 }, title = { Text("Удалить программу?") },
+        FitDialog(onDismissRequest = { deletingId = -1 }, title = { Text("Удалить программу?") },
             text = { Text("«${entry.program.title}» будет удалена из библиотеки. Назначенные клиентам копии сохранятся.") },
-            confirmButton = { TextButton(onClick = {
+            confirmButton = { FitTextButton(onClick = {
                 onDelete(entry.id); deletingId = -1; notice = "Программа удалена"
             }) { Text("Удалить", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { deletingId = -1 }) { Text("Отмена") } })
+            dismissButton = { FitTextButton(onClick = { deletingId = -1 }) { Text("Отмена") } })
     }
-    if (chatMessage) AlertDialog(onDismissRequest = { chatMessage = false }, text = { Text("Раздел чатов будет доступен позже.") },
-        confirmButton = { TextButton(onClick = { chatMessage = false }) { Text("Понятно") } })
+    if (chatMessage) FitDialog(onDismissRequest = { chatMessage = false }, text = { Text("Раздел чатов будет доступен позже.") },
+        confirmButton = { FitTextButton(onClick = { chatMessage = false }) { Text("Понятно") } })
 }
 
 @Composable
@@ -134,30 +134,19 @@ private fun ProgramLibraryScreen(
     var query by rememberSaveable { mutableStateOf("") }
     val visible = library.filter { it.isTemplate == showTemplates && it.program.title.contains(query.trim(), ignoreCase = true) }
     Box(Modifier.fillMaxSize().background(Page)) {
-        Column(Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(Color(0xFF020B07), Forest)))) {
+        Column(Modifier.fillMaxSize().background(FitScreenBrush)) {
             Column(Modifier.fillMaxWidth().statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Программы", color = Color.White, fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                 Text("${library.count { !it.isTemplate }} в библиотеке · ${library.count { it.isTemplate }} шаблона",
                     color = Color(0xFF99A29C), fontSize = 12.sp, lineHeight = 16.sp)
             }
             Column(Modifier.weight(1f).fillMaxWidth().clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)).background(Page)) {
-                Row(Modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFD7D6DE)).padding(2.dp)) {
-                    listOf("Мои программы", "Шаблоны").forEachIndexed { index, label ->
-                        val active = showTemplates == (index == 1)
-                        Box(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(if (active) Color.White else Color.Transparent)
-                            .clickable(role = Role.Tab) { onTemplates(index == 1) }.semantics { selected = active }
-                            .padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                            Text(label, color = Ink, fontSize = 13.sp, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
-                        }
-                    }
-                }
-                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                FitSegments(listOf("Мои программы", "Шаблоны"), if (showTemplates) 1 else 0,
+                    { onTemplates(it == 1) }, Modifier.padding(16.dp), background = Color(0xFFE0E0E0))
+                FitTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     placeholder = { Text("Поиск программы") }, singleLine = true, shape = RoundedCornerShape(12.dp),
                     leadingIcon = { WorkoutIcon(Res.drawable.workout_search, null) },
-                    trailingIcon = { if (query.isNotEmpty()) WorkoutIconButton(Res.drawable.workout_close, "Очистить поиск", { query = "" }) },
-                    colors = OutlinedTextFieldDefaults.colors(unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White, unfocusedBorderColor = Color.Transparent))
+                    trailingIcon = { if (query.isNotEmpty()) WorkoutIconButton(Res.drawable.workout_close, "Очистить поиск", { query = "" }) })
                 LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (visible.isEmpty()) item {
@@ -192,13 +181,13 @@ private fun ProgramLibraryCard(entry: LibraryProgram, onOpen: () -> Unit, onDupl
                     color = Color(0xFF8A958F), fontSize = 12.sp, lineHeight = 17.sp)
             }
             Box {
-                TextButton(onClick = { menu = true }, Modifier.size(40.dp).semantics { contentDescription = "Действия с программой ${entry.program.title}" },
+                FitTextButton(onClick = { menu = true }, Modifier.size(40.dp).semantics { contentDescription = "Действия с программой ${entry.program.title}" },
                     contentPadding = PaddingValues(0.dp)) { Text("⋮", fontSize = 24.sp, color = Ink) }
-                DropdownMenu(menu, { menu = false }) {
-                    DropdownMenuItem(text = { Text(if (entry.isTemplate) "Создать по шаблону" else "Редактировать") },
+                FitDropdownMenu(menu, { menu = false }) {
+                    FitDropdownMenuItem(text = { Text(if (entry.isTemplate) "Создать по шаблону" else "Редактировать") },
                         onClick = { menu = false; onOpen() })
-                    DropdownMenuItem(text = { Text("Создать копию") }, onClick = { menu = false; onDuplicate() })
-                    if (!entry.isTemplate) DropdownMenuItem(text = { Text("Удалить", color = MaterialTheme.colorScheme.error) },
+                    FitDropdownMenuItem(text = { Text("Создать копию") }, onClick = { menu = false; onDuplicate() })
+                    if (!entry.isTemplate) FitDropdownMenuItem(text = { Text("Удалить", color = MaterialTheme.colorScheme.error) },
                         onClick = { menu = false; onDelete() })
                 }
             }

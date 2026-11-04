@@ -40,7 +40,8 @@ internal data class WorkoutDate(val year: Int, val month: Int, val day: Int) {
 internal val MonthNames = listOf("Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь")
 internal val WeekdayNames = listOf("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье")
 internal val ShortWeekdays = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-internal val ExerciseNames = listOf("Выпады назад", "Ягодичный мостик", "Румынская тяга", "Планка", "Отведение ноги в кроссовере")
+internal val ExerciseNames = listOf("Выпады назад", "Ягодичный мостик", "Румынская тяга", "Планка", "Отведение ноги в кроссовере",
+    "Жим штанги лёжа", "Приседания со штангой на спине", "Становая тяга")
 
 internal data class TrainingExercise(
     val id: Int,
@@ -49,6 +50,13 @@ internal data class TrainingExercise(
     val reps: Int = 12,
     val weights: String = "10,12,15",
     val restMinutes: Int = 2,
+    val seconds: Int = 0,
+    val sameDuration: Boolean = true,
+    val setDurations: List<Int> = emptyList(),
+    val restEnabled: Boolean = true,
+    val perSetWeights: Boolean = true,
+    val maxWeightSets: List<Int> = emptyList(),
+    val supersetId: Int = 0,
 )
 internal data class TrainingDay(val id: Int, val title: String, val exercises: List<TrainingExercise> = emptyList())
 internal data class TrainingWeek(val id: Int, val days: List<TrainingDay>)
@@ -99,7 +107,7 @@ internal fun programFromTemplate(template: ProgramTemplate): WorkoutProgram {
     return WorkoutProgram(title = template.title, weeks = List(template.weeks) { week ->
         TrainingWeek(week + 1, List(template.days) { day ->
             TrainingDay(nextId++, "День ${day + 1} · ${if (day % 2 == 0) "Фулбоди" else "Ноги"}",
-                ExerciseNames.indices.map { TrainingExercise(nextId++, it) })
+                (0..4).map { TrainingExercise(nextId++, it) })
         })
     })
 }
@@ -119,11 +127,17 @@ private fun unpack(record: String): List<String> {
     return fields
 }
 
-private fun encodeExercise(e: TrainingExercise): String = pack(listOf(e.id.toString(), e.catalogIndex.toString(),
-    e.sets.toString(), e.reps.toString(), e.weights, e.restMinutes.toString()))
-private fun decodeExercise(record: String): TrainingExercise {
+internal fun encodeExercise(e: TrainingExercise): String = pack(listOf(e.id.toString(), e.catalogIndex.toString(),
+    e.sets.toString(), e.reps.toString(), e.weights, e.restMinutes.toString(), e.seconds.toString(),
+    e.sameDuration.toString(), e.setDurations.joinToString(","), e.restEnabled.toString(),
+    e.perSetWeights.toString(), e.maxWeightSets.joinToString(","), e.supersetId.toString()))
+internal fun decodeExercise(record: String): TrainingExercise {
     val e = unpack(record)
-    return TrainingExercise(e[0].toInt(), e[1].toInt(), e[2].toInt(), e[3].toInt(), e[4], e[5].toInt())
+    fun integers(index: Int) = e.getOrNull(index).orEmpty().split(',').mapNotNull(String::toIntOrNull)
+    return TrainingExercise(e[0].toInt(), e[1].toInt(), e[2].toInt(), e[3].toInt(), e[4], e[5].toInt(),
+        e.getOrNull(6)?.toIntOrNull() ?: 0, e.getOrNull(7)?.toBooleanStrictOrNull() ?: true,
+        integers(8), e.getOrNull(9)?.toBooleanStrictOrNull() ?: true,
+        e.getOrNull(10)?.toBooleanStrictOrNull() ?: true, integers(11), e.getOrNull(12)?.toIntOrNull() ?: 0)
 }
 private fun encodeDay(day: TrainingDay): String = pack(listOf(day.id.toString(), day.title) + day.exercises.map(::encodeExercise))
 private fun decodeDay(record: String): TrainingDay {
